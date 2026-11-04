@@ -1,0 +1,15 @@
+-- ============================================
+-- ROLES: roles ("admin" ve todo y la configuración)
+-- ============================================
+IF OBJECT_ID('dbo.ROLES', 'U') IS NULL
+BEGIN
+    CREATE TABLE "ROLES" (
+        "ID_ROL" INT IDENTITY(1,1) CONSTRAINT "PK_ROLES" PRIMARY KEY,
+        "NOMBRE_ROL" NVARCHAR(50) NOT NULL CONSTRAINT "UQ_ROLES_NOMBRE" UNIQUE,
+        "DESCRIPCION" NVARCHAR(200) NULL,
+        "NIVEL_ACCESO" INT NOT NULL CONSTRAINT "DF_ROLES_NIVEL" DEFAULT 1,
+        "ES_SISTEMA" BIT NOT NULL CONSTRAINT "DF_ROLES_SISTEMA" DEFAULT 0,
+        "ACTIVO" BIT NOT NULL CONSTRAINT "DF_ROLES_ACTIVO" DEFAULT 1
+    );
+END
+GO

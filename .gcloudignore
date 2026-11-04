@@ -1,0 +1,2 @@
+# gcloud run deploy --source . sube esto a Cloud Build (mismas reglas que .dockerignore)
+#!include:.dockerignore

@@ -1,0 +1,27 @@
+# Dependencias
+node_modules/
+
+# Entorno
+.env
+.env.local
+.env.*.local
+
+# Build
+dist/
+frontend/dist/
+
+# Despliegue
+.vercel/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# SO / IDE
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
