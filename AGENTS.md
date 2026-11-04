@@ -24,7 +24,11 @@ de la plantilla se quitó; migración `006_quitar_eventos`.)
 
 ## Base de datos
 
-- **Producción: Supabase (PostgreSQL) + Google Cloud Run** (`Dockerfile`; ver README). Con `DATABASE_URL`
+- **Servidor del GORE (rama `servidor-gore`)**: Debian 13, `docker-compose.yml` (app `node:22-trixie-slim` + `postgres:17-trixie`
+  sin puerto publicado), PDF en carpeta (`ARCHIVOS_DIR` → `STORAGE='disco'`), `DB_SSL=false` con `DATABASE_URL`, Nginx
+  (`docs/nginx-sigea.conf`). Guía: `docs/despliegue-servidor-linux.md`. Mudanza de PDF: `npm run archivos:mudar`.
+  `lib/storage/archivos.js`: prioridad `supabase` (secret key) > `disco` (`ARCHIVOS_DIR`) > `bd`; misma `RUTA_ARCHIVO` en los dos.
+- **Prueba en línea (rama `main`): Supabase (PostgreSQL) + Google Cloud Run** (`Dockerfile`; ver README). Con `DATABASE_URL`
   (Session pooler, IPv4) el driver pg usa SSL y `DB_POOL_MAX` (5); `db:setup` no crea BD/usuario.
   `server.js` pone `trust proxy` y `clientIp` usa `req.ip`. SQL Server sigue como opción.
 - Motor por `.env`: `DB_CLIENT=postgres|mssql` (por defecto postgres). `DatabaseManager` tiene la misma API
@@ -201,6 +205,8 @@ npm start                 # producción (sirve frontend/dist si existe)
 npm run db:setup          # crea BD (si hay DB_ADMIN_*), tablas, seeds y admin
 npm run db:migrate        # aplica database/sql/<motor>/migrations pendientes
 npm run informes:reindexar  # re-extrae texto de los PDF y recalcula TEXTO_BUSQUEDA
+npm run archivos:mudar      # copia los PDF (Supabase Storage o BD) a ARCHIVOS_DIR, verificando SHA-256
+docker compose up -d --build  # servidor del GORE: app + PostgreSQL (docs/despliegue-servidor-linux.md)
 npm run admin:reiniciar-clave -- <DNI>  # clave temporal para una cuenta (p. ej. el admin)
 cd frontend && npm run build   # build de producción
 cd frontend && npm run lint    # ESLint (React, hooks, accesibilidad jsx-a11y); dejarlo limpio

@@ -114,6 +114,20 @@ defecto la API responde solo al mismo origen. Sirve detrás de HTTPS (proxy inve
 el servidor ya envía CSP y demás cabeceras de seguridad, y HSTS cuando llega por HTTPS.
 `npm run dev:web` escucha solo en localhost; `VITE_HOST=true` lo abre a la red local.
 
+### Servidor propio del GORE (Debian 13) — rama `servidor-gore`
+
+App + PostgreSQL 17 + PDF en una carpeta, con `docker-compose.yml` y Nginx con HTTPS delante. Guía completa para TI
+(preguntas, instalación, mudanza desde Supabase, respaldos): **[docs/despliegue-servidor-linux.md](docs/despliegue-servidor-linux.md)**.
+
+```bash
+cp .env.servidor.example .env       # claves
+docker compose up -d --build
+docker compose exec app npm run db:setup         # BD nueva (o restaurar la de Supabase: ver la guía)
+```
+
+Los PDF van a `ARCHIVOS_DIR` (`/datos/archivos`, volumen). `npm run archivos:mudar` copia los de Supabase Storage
+(o los guardados en la BD) a esa carpeta, verificando el SHA-256.
+
 ### Google Cloud Run + Supabase
 
 El `Dockerfile` construye el frontend y deja Express sirviendo API + `frontend/dist` en `PORT`

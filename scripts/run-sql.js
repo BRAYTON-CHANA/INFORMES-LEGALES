@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import 'dotenv/config';
 import { DB_CLIENT, loadDriver } from '../lib/database/DatabaseManager.js';
-import { STORAGE, BUCKET, asegurarBucket } from '../lib/storage/archivos.js';
+import { DESTINO, asegurarBucket } from '../lib/storage/archivos.js';
 
 /**
  * Ejecuta los scripts de database/sql/<motor>/ en orden (motor = DB_CLIENT).
@@ -166,9 +166,9 @@ async function main() {
 
   await conn.close();
 
-  // PDF en Supabase Storage: bucket privado (sin SUPABASE_SECRET_KEY, van en la BD)
-  if (STORAGE === 'supabase') console.log(`  Bucket "${BUCKET}" de Storage: ${await asegurarBucket()}`);
-  else console.log('  Sin Supabase Storage (SUPABASE_URL/SUPABASE_SECRET_KEY): los PDF se guardan en la BD');
+  // PDF: bucket privado de Supabase, carpeta del servidor (ARCHIVOS_DIR) o la BD (ver lib/storage/archivos.js)
+  const estado = await asegurarBucket();
+  console.log(`  PDF en ${DESTINO}${estado ? `: ${estado}` : ''}`);
   console.log('[run-sql] Listo.');
 }
 

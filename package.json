@@ -11,7 +11,8 @@
     "db:setup": "node scripts/run-sql.js",
     "db:migrate": "node scripts/run-sql-migrations.js",
     "informes:reindexar": "node scripts/reindexar-informes.js",
-    "admin:reiniciar-clave": "node scripts/reiniciar-clave.js"
+    "admin:reiniciar-clave": "node scripts/reiniciar-clave.js",
+    "archivos:mudar": "node scripts/mudar-archivos.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

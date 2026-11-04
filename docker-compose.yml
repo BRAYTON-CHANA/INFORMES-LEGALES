@@ -1,0 +1,53 @@
+# SIGEA en el servidor del GORE (Debian 13): app + PostgreSQL 17 + PDF en una carpeta.
+# Guía completa: docs/despliegue-servidor-linux.md
+#
+#   cp .env.servidor.example .env      # y completar las claves
+#   docker compose up -d --build
+#   docker compose exec app npm run db:setup     # solo la primera vez (BD nueva)
+#
+# La BD no publica puertos (solo la ve la app por la red interna). La app escucha en
+# 127.0.0.1:8080 y la publica Nginx con HTTPS (docs/nginx-sigea.conf).
+name: sigea
+
+services:
+  db:
+    image: postgres:17-trixie
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sigea}
+      POSTGRES_USER: ${POSTGRES_USER:-sigea}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD en .env}
+      TZ: America/Lima
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_CLIENT: postgres
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sigea}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-sigea}
+      DB_SSL: "false"
+      ARCHIVOS_DIR: /datos/archivos
+      # En el servidor no se usa Supabase (si quedara en .env, Storage tendría prioridad sobre la carpeta)
+      SUPABASE_SECRET_KEY: ""
+      SUPABASE_SERVICE_ROLE_KEY: ""
+      PORT: "8080"
+      TZ: America/Lima
+    volumes:
+      - archivos:/datos/archivos
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  archivos:
