@@ -16,7 +16,7 @@ const leerColapsado = () => {
   try { return localStorage.getItem(NAV_COLLAPSED_KEY) === '1'; } catch { return false; }
 };
 
-/** Navbar institucional (logo, SIGEA, usuario) + menú lateral de módulos + contenido */
+/** Navbar institucional (logo, nombre del sistema, usuario) + menú lateral de módulos + contenido */
 const AppLayout = () => {
   const { user, roles, logout, isAuthenticated } = useAuthContext();
   const navigate = useNavigate();

@@ -2,10 +2,10 @@ const getEnvValue = (value, fallback) => value?.trim() || fallback;
 
 /** Marca de la app (frontend/.env.local) */
 export const APP_CONFIG = {
-  name: getEnvValue(import.meta.env.VITE_APP_NAME, 'SIGEA'),
+  name: getEnvValue(import.meta.env.VITE_APP_NAME, 'Informes Legales ORAJ'),
   fullName: getEnvValue(
     import.meta.env.VITE_APP_FULL_NAME,
-    'Sistema Integrado para la Gestión y Eficiencia Administrativa'
+    'Módulo de Informes Legales — Oficina Regional de Asesoría Jurídica'
   ),
   description: getEnvValue(
     import.meta.env.VITE_APP_DESCRIPTION,

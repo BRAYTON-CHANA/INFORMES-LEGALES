@@ -1,4 +1,4 @@
-# SIGEA — imagen de la app (Express sirve la API y frontend/dist). Debian 13 «trixie», igual que el
+# Informes Legales ORAJ — imagen de la app (Express sirve la API y frontend/dist). Debian 13 «trixie», igual que el
 # servidor del GORE. Sirve para Cloud Run y para docker-compose.yml (servidor propio).
 
 # 1) Build del frontend (Vite). Las VITE_* se fijan aquí: docker build --build-arg VITE_APP_NAME=...

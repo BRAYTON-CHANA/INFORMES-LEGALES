@@ -1,14 +1,14 @@
-# SIGEA — Gobierno Regional de Moquegua
+# Informes Legales ORAJ — Gobierno Regional de Moquegua
 
-**Sistema Integrado para la Gestión y Eficiencia Administrativa (SIGEA)**. Su primer
-módulo es el de informes legales de la Oficina Regional de Asesoría Jurídica (ORAJ).
+**Módulo de Informes Legales de la Oficina Regional de Asesoría Jurídica (ORAJ)** del
+Gobierno Regional de Moquegua.
 Creado a partir de la plantilla *Web Template*: **React 19 + Vite + Tailwind v4** en el
 frontend y **Express 5** en el backend, con login JWT, usuarios y roles, catálogos
 con validación y base de datos configurable (**SQL Server** o **PostgreSQL**).
 
 **Interfaz**: navbar rojo institucional (logo, nombre del sistema, usuario con su menú
 de clave y salida; solo tema claro) con una franja azul y verde de Moquegua; debajo, el menú
-lateral con *General*, *Módulos* y *Configuración*. Colores en `frontend/src/index.css`
+lateral con *Módulos* y *Configuración*. Colores en `frontend/src/index.css`
 (`gore-50…900` rojo; `moq-azul`, `moq-verde`).
 
 **Logo**: copiar el PNG a **`frontend/public/logo.png`** (fondo transparente) y recargar
@@ -16,8 +16,7 @@ el navegador; no hace falta reiniciar. El ícono de la pestaña es `frontend/pub
 (versión cuadrada de 256 px del mismo logo; regenerarlo si cambia el logo).
 Otra ruta o URL: `VITE_APP_LOGO` en `frontend/.env.local`. Si no existe, se muestra "GORE".
 
-No depende de ningún proveedor: corre en cualquier servidor con Node.js
-(o en Vercel, opcional).
+No depende de ningún proveedor: corre en cualquier servidor con Node.js.
 
 ## Módulo de sistematización de informes legales
 
@@ -105,7 +104,7 @@ están en `database/sql/<motor>/` (ver [database/sql/README.md](database/sql/REA
 cd frontend && npm run build && cd ..
 npm start                     # Express sirve la API y frontend/dist en el mismo puerto
 # o con PM2:
-pm2 start ecosystem.config.cjs
+pm2 start server.js --name informes-oraj
 ```
 
 Configura `JWT_SECRET` largo y aleatorio. `CORS_ORIGIN` solo si el frontend se sirve
@@ -139,22 +138,18 @@ disco efímero no importa. Sin `SUPABASE_SECRET_KEY` se guardan dentro de la BD.
 npm run db:setup              # tablas, catálogos, vistas y admin. Luego, solo npm run db:migrate
 
 # 2. Secretos (Secret Manager)
-printf '%s' 'postgresql://postgres.<ref>:<clave>@aws-0-<region>.pooler.supabase.com:5432/postgres'   | gcloud secrets create sigea-database-url --data-file=-
+printf '%s' 'postgresql://postgres.<ref>:<clave>@aws-0-<region>.pooler.supabase.com:5432/postgres'   | gcloud secrets create informes-oraj-database-url --data-file=-
 openssl rand -hex 48 | tr -d '
-' | gcloud secrets create sigea-jwt-secret --data-file=-
+' | gcloud secrets create informes-oraj-jwt-secret --data-file=-
 
 # 3. Desplegar (Cloud Build construye el Dockerfile)
-gcloud run deploy sigea --source . --region southamerica-west1 --allow-unauthenticated   --set-env-vars DB_CLIENT=postgres,DB_POOL_MAX=5,SIGLA_ORAJ=GRM/GGR/ORAJ,MAX_ARCHIVO_MB=25   --set-env-vars SUPABASE_URL=https://<ref>.supabase.co,SUPABASE_BUCKET=informes   --set-secrets DATABASE_URL=sigea-database-url:latest,JWT_SECRET=sigea-jwt-secret:latest,SUPABASE_SECRET_KEY=sigea-supabase-secret:latest
+gcloud run deploy informes-oraj --source . --region southamerica-west1 --allow-unauthenticated   --set-env-vars DB_CLIENT=postgres,DB_POOL_MAX=5,SIGLA_ORAJ=GRM/GGR/ORAJ,MAX_ARCHIVO_MB=25   --set-env-vars SUPABASE_URL=https://<ref>.supabase.co,SUPABASE_BUCKET=informes   --set-secrets DATABASE_URL=informes-oraj-database-url:latest,JWT_SECRET=informes-oraj-jwt-secret:latest,SUPABASE_SECRET_KEY=informes-oraj-supabase-secret:latest
 ```
 
 La cuenta de servicio de Cloud Run necesita el rol *Secret Manager Secret Accessor*.
 Cloud Run está detrás de un proxy: `trust proxy` (`TRUST_PROXY`, 1) hace que la IP del
 límite de login y HSTS salgan de `x-forwarded-*`. Prueba local de la imagen:
-`docker build -t sigea . && docker run -p 8080:8080 --env-file .env sigea`.
-
-**Vercel (opcional):** `vercel.json` construye el frontend y publica `api/` como
-funciones (los handlers son `(req, res)` compatibles). Necesita una BD accesible desde
-internet; no está probado en esta plantilla.
+`docker build -t informes-oraj . && docker run -p 8080:8080 --env-file .env informes-oraj`.
 
 ## Estructura
 
@@ -186,7 +181,7 @@ frontend/src/
 - **Página nueva**: carpeta con `index.jsx` en `app/views/<sección>/<página>/` (igual
   que en el menú), su `<Route>` en `app/App.jsx` y su ítem (con `roles` y `desc`) en
   `app/navigation.js`. La ruta queda protegida con los mismos roles del ítem.
-- **Módulo nuevo de SIGEA**: `app/views/modulos/<modulo>/`, su lógica en
+- **Módulo nuevo**: `app/views/modulos/<modulo>/`, su lógica en
   `features/<modulo>/` y sus ítems en la sección "Módulos" (aparece solo en `/modulos`).
 - **Catálogo administrable**: tabla en `database/sql/<motor>/tables/`, su definición
   (campos, obligatorios, únicos, roles) en `lib/handlers/catalogos.js` y su página en

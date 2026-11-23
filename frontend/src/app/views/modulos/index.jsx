@@ -1,8 +1,8 @@
 import SeccionIndice from '@/features/layout/SeccionIndice';
 
-/** /modulos — módulos de SIGEA disponibles para el usuario */
+/** /modulos — módulos disponibles para el usuario */
 const Modulos = () => (
-  <SeccionIndice ruta="/modulos" descripcion="Módulos de SIGEA disponibles según tu perfil." />
+  <SeccionIndice ruta="/modulos" descripcion="Módulos disponibles según tu perfil." />
 );
 
 export default Modulos;

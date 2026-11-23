@@ -1,7 +1,7 @@
 # Dependencias
 node_modules/
 
-# Entorno
+# Entorno (solo se versionan las plantillas .env*.example)
 .env
 .env.local
 .env.*.local
@@ -9,14 +9,23 @@ node_modules/
 # Build
 dist/
 frontend/dist/
-
-# Despliegue
-.vercel/
+coverage/
 
 # Logs
 logs/
 *.log
 npm-debug.log*
+
+# Respaldos y volcados de BD
+*.dump
+*.backup
+
+# Herramientas de IA / asistentes (notas locales)
+AGENTS.md
+CLAUDE.md
+.claude/
+.devin/
+.github/skills/
 
 # SO / IDE
 .DS_Store

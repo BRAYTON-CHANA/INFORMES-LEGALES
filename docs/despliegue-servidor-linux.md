@@ -1,6 +1,6 @@
-# SIGEA en el servidor del GORE (Debian 13)
+# Informes Legales ORAJ en el servidor del GORE (Debian 13)
 
-Guía para instalar SIGEA (repositorio de informes legales de la ORAJ) en un servidor Linux propio del
+Guía para instalar Informes Legales ORAJ (repositorio de informes legales de la ORAJ) en un servidor Linux propio del
 GORE Moquegua y mudar los datos desde la versión de prueba (Supabase + Google Cloud Run).
 
 Todo corre en el servidor: **la app** (Node.js), **la base de datos** (PostgreSQL 17) y **los PDF**
@@ -30,7 +30,7 @@ Antes de instalar, conviene acordar con TI:
 
 ```bash
 # Como root: usuario administrador con sudo
-adduser sigea && usermod -aG sudo sigea
+adduser oraj && usermod -aG sudo oraj
 
 # Parches de seguridad automáticos
 apt update && apt full-upgrade -y
@@ -58,16 +58,16 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
   | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo usermod -aG docker sigea     # volver a entrar para que aplique
+sudo usermod -aG docker oraj     # volver a entrar para que aplique
 docker compose version
 ```
 
-## 3. Descargar SIGEA y configurarlo
+## 3. Descargar el sistema y configurarlo
 
 ```bash
-sudo mkdir -p /opt/sigea && sudo chown sigea:sigea /opt/sigea
-git clone -b servidor-gore https://github.com/BRAYTON-CHANA/INFORMES-LEGALES.git /opt/sigea
-cd /opt/sigea
+sudo mkdir -p /opt/informes-oraj && sudo chown oraj:oraj /opt/informes-oraj
+git clone -b servidor-gore https://github.com/BRAYTON-CHANA/INFORMES-LEGALES.git /opt/informes-oraj
+cd /opt/informes-oraj
 cp .env.servidor.example .env
 chmod 600 .env
 nano .env
@@ -82,7 +82,7 @@ En `.env` completar como mínimo:
 | `ADMIN_DNI` / `ADMIN_PASSWORD` | el admin inicial (solo para una BD nueva; pide cambiar la clave al entrar) |
 | `MAX_ARCHIVO_MB` | tamaño máximo por PDF (10 por defecto) |
 
-## 4. Levantar SIGEA
+## 4. Levantar el sistema
 
 ```bash
 docker compose up -d --build        # construye la app y arranca app + db
@@ -103,15 +103,15 @@ Luego, **una de dos**:
 
 ```bash
 sudo apt install -y nginx certbot python3-certbot-nginx
-sudo cp /opt/sigea/docs/nginx-sigea.conf /etc/nginx/sites-available/sigea
-sudo nano /etc/nginx/sites-available/sigea          # poner el dominio real
-sudo ln -s /etc/nginx/sites-available/sigea /etc/nginx/sites-enabled/
+sudo cp /opt/informes-oraj/docs/nginx-informes-oraj.conf /etc/nginx/sites-available/informes-oraj
+sudo nano /etc/nginx/sites-available/informes-oraj          # poner el dominio real
+sudo ln -s /etc/nginx/sites-available/informes-oraj /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d informes.regionmoquegua.gob.pe   # o instalar el certificado del GORE
 ```
 
-`client_max_body_size` en `nginx-sigea.conf` debe ser mayor que `MAX_ARCHIVO_MB` (viene en 15M para 10 MB).
+`client_max_body_size` en `nginx-informes-oraj.conf` debe ser mayor que `MAX_ARCHIVO_MB` (viene en 15M para 10 MB).
 
 ## 6. Mudanza desde la versión de prueba (Supabase)
 
@@ -123,13 +123,13 @@ después del respaldo no se copia.
 En Supabase: *Project Settings → Database → Connect →* **Direct connection** (o *Session pooler*). En el servidor:
 
 ```bash
-cd /opt/sigea
+cd /opt/informes-oraj
 # Respaldo de Supabase (solo el esquema public: tablas, vistas, datos), con pg_dump 17 del contenedor
 docker compose exec -T db pg_dump --no-owner --no-privileges --schema=public -Fc \
   "postgresql://postgres.<ref>:<clave>@aws-1-us-west-2.pooler.supabase.com:5432/postgres" > supabase.dump
 
 # Restaurar en la BD del servidor (debe estar vacía: NO correr db:setup antes)
-docker compose exec -T db pg_restore --no-owner --no-privileges -U sigea -d sigea < supabase.dump
+docker compose exec -T db pg_restore --no-owner --no-privileges -U informes_oraj -d informes_oraj < supabase.dump
 docker compose exec app npm run db:migrate          # aplica migraciones nuevas, si las hay
 ```
 
@@ -137,7 +137,7 @@ docker compose exec app npm run db:migrate          # aplica migraciones nuevas,
 de roles `anon`/`authenticated` (propios de Supabase) son normales. Lo que importa es que estén los datos:
 
 ```bash
-docker compose exec db psql -U sigea -d sigea -c 'SELECT COUNT(*) FROM "INFORMES";'
+docker compose exec db psql -U informes_oraj -d informes_oraj -c 'SELECT COUNT(*) FROM "INFORMES";'
 ```
 
 ### 6.2 PDF
@@ -165,30 +165,30 @@ Se puede correr varias veces: salta los que ya están. No borra nada de Supabase
 ## 7. Respaldos
 
 Lo que hay que respaldar: **la base de datos** y **la carpeta de PDF**. Ejemplo con cron diario (2 a. m.)
-conservando 30 días; copiar `/opt/sigea-respaldos` a otro disco o servidor (lo define TI):
+conservando 30 días; copiar `/opt/informes-oraj-respaldos` a otro disco o servidor (lo define TI):
 
 ```bash
-sudo mkdir -p /opt/sigea-respaldos && sudo chown sigea:sigea /opt/sigea-respaldos
-cat > /opt/sigea/respaldo.sh <<'EOF'
+sudo mkdir -p /opt/informes-oraj-respaldos && sudo chown oraj:oraj /opt/informes-oraj-respaldos
+cat > /opt/informes-oraj/respaldo.sh <<'EOF'
 #!/bin/sh
 set -e
-cd /opt/sigea
+cd /opt/informes-oraj
 F=$(date +%F)
-docker compose exec -T db pg_dump -U sigea -Fc sigea > /opt/sigea-respaldos/bd-$F.dump
-docker run --rm -v sigea_archivos:/datos:ro -v /opt/sigea-respaldos:/r debian:trixie-slim \
+docker compose exec -T db pg_dump -U informes_oraj -Fc informes_oraj > /opt/informes-oraj-respaldos/bd-$F.dump
+docker run --rm -v informes-oraj_archivos:/datos:ro -v /opt/informes-oraj-respaldos:/r debian:trixie-slim \
   tar czf /r/archivos-$F.tar.gz -C /datos .
-find /opt/sigea-respaldos -type f -mtime +30 -delete
+find /opt/informes-oraj-respaldos -type f -mtime +30 -delete
 EOF
-chmod +x /opt/sigea/respaldo.sh
-( crontab -l 2>/dev/null; echo "0 2 * * * /opt/sigea/respaldo.sh >> /opt/sigea-respaldos/respaldo.log 2>&1" ) | crontab -
+chmod +x /opt/informes-oraj/respaldo.sh
+( crontab -l 2>/dev/null; echo "0 2 * * * /opt/informes-oraj/respaldo.sh >> /opt/informes-oraj-respaldos/respaldo.log 2>&1" ) | crontab -
 ```
 
 Restaurar (servidor nuevo o desastre):
 
 ```bash
 docker compose up -d db
-docker compose exec -T db pg_restore --clean --if-exists -U sigea -d sigea < /opt/sigea-respaldos/bd-AAAA-MM-DD.dump
-docker run --rm -v sigea_archivos:/datos -v /opt/sigea-respaldos:/r debian:trixie-slim \
+docker compose exec -T db pg_restore --clean --if-exists -U informes_oraj -d informes_oraj < /opt/informes-oraj-respaldos/bd-AAAA-MM-DD.dump
+docker run --rm -v informes-oraj_archivos:/datos -v /opt/informes-oraj-respaldos:/r debian:trixie-slim \
   tar xzf /r/archivos-AAAA-MM-DD.tar.gz -C /datos
 docker compose up -d
 ```
@@ -202,22 +202,22 @@ sudo apt install -y postgresql nginx git           # PostgreSQL 17 de Debian 13
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -   # Node 22 (Debian 13 trae Node 20)
 sudo apt install -y nodejs && sudo npm install -g pm2
 
-sudo -u postgres createuser -P sigea && sudo -u postgres createdb -O sigea sigea
-sudo mkdir -p /datos/archivos && sudo chown sigea:sigea /datos/archivos
+sudo -u postgres createuser -P informes_oraj && sudo -u postgres createdb -O informes_oraj informes_oraj
+sudo mkdir -p /datos/archivos && sudo chown oraj:oraj /datos/archivos
 
-cd /opt/sigea && npm ci --omit=dev && (cd frontend && npm ci && npm run build)
-# .env: DATABASE_URL=postgresql://sigea:<clave>@127.0.0.1:5432/sigea, DB_SSL=false, ARCHIVOS_DIR=/datos/archivos, PORT=8080
+cd /opt/informes-oraj && npm ci --omit=dev && (cd frontend && npm ci && npm run build)
+# .env: DATABASE_URL=postgresql://informes_oraj:<clave>@127.0.0.1:5432/informes_oraj, DB_SSL=false, ARCHIVOS_DIR=/datos/archivos, PORT=8080
 npm run db:setup
-pm2 start ecosystem.config.cjs && pm2 save && pm2 startup systemd
+pm2 start server.js --name informes-oraj && pm2 save && pm2 startup systemd
 ```
 
 Nginx y respaldos igual que arriba (en los respaldos, `pg_dump` y `tar` directos, sin `docker`).
 
-## 9. Actualizar SIGEA
+## 9. Actualizar el sistema
 
 ```bash
-cd /opt/sigea
-/opt/sigea/respaldo.sh                     # respaldo antes de actualizar
+cd /opt/informes-oraj
+/opt/informes-oraj/respaldo.sh                     # respaldo antes de actualizar
 git pull
 docker compose up -d --build
 docker compose exec app npm run db:migrate
@@ -232,4 +232,4 @@ curl -s http://127.0.0.1:8080/api/health
 | Error 413 al subir un PDF | `client_max_body_size` de Nginx menor que `MAX_ARCHIVO_MB` |
 | «No se pudo guardar el PDF en el almacenamiento» | permisos o espacio del volumen: `docker compose logs app`, `df -h` |
 | La app no arranca | `docker compose logs app` (falta `JWT_SECRET` o la clave de la BD) |
-| Login lento o la IP del límite de intentos es la de Nginx | `TRUST_PROXY=1` y las cabeceras `X-Forwarded-*` de `nginx-sigea.conf` |
+| Login lento o la IP del límite de intentos es la de Nginx | `TRUST_PROXY=1` y las cabeceras `X-Forwarded-*` de `nginx-informes-oraj.conf` |
