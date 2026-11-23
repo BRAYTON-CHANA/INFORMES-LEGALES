@@ -113,10 +113,18 @@ defecto la API responde solo al mismo origen. Sirve detrás de HTTPS (proxy inve
 el servidor ya envía CSP y demás cabeceras de seguridad, y HSTS cuando llega por HTTPS.
 `npm run dev:web` escucha solo en localhost; `VITE_HOST=true` lo abre a la red local.
 
-### Servidor propio del GORE (Debian 13) — rama `servidor-gore`
+### Servidor del GORE con HestiaCP (panelh) — rama `servidor-gore`
 
-App + PostgreSQL 17 + PDF en una carpeta, con `docker-compose.yml` y Nginx con HTTPS delante. Guía completa para TI
-(preguntas, instalación, mudanza desde Supabase, respaldos): **[docs/despliegue-servidor-linux.md](docs/despliegue-servidor-linux.md)**.
+**Así se publica en producción.** Sin Docker: Node.js 22 y PostgreSQL 17 instalados en el sistema, SIGEA como servicio
+systemd (`sigea`, usuario `sigeaapp`, `127.0.0.1:3001`), código en `/opt/sigea`, PDF en `/var/lib/sigea/archivos`, y el
+nginx de Hestia delante con la plantilla de proxy `sigea-3001` y Let's Encrypt. Guía paso a paso (0–12, actualizar,
+volver atrás): **[docs/despliegue-hestia.md](docs/despliegue-hestia.md)**.
+
+### Servidor dedicado sin Hestia (alternativa con Docker)
+
+Solo para un Debian **sin** panel: app + PostgreSQL 17 + PDF en una carpeta, con `docker-compose.yml` y Nginx con
+HTTPS delante. **No usar en panelh** (`ufw`, Docker y su nginx chocan con Hestia). Guía:
+[docs/despliegue-servidor-linux.md](docs/despliegue-servidor-linux.md).
 
 ```bash
 cp .env.servidor.example .env       # claves

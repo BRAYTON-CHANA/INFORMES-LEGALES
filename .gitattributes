@@ -1,0 +1,6 @@
+# git archive (despliegue en panelh, docs/despliegue-hestia.md) no incluye lo que solo sirve para contenedores
+Dockerfile export-ignore
+docker-compose.yml export-ignore
+.dockerignore export-ignore
+.gcloudignore export-ignore
+.env.servidor.example export-ignore

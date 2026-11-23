@@ -29,5 +29,7 @@ RUN mkdir -p /datos/archivos && chown node:node /datos/archivos
 USER node
 # Cloud Run inyecta PORT; en docker-compose se usa 8080
 ENV PORT=8080
+# Dentro del contenedor hay que escuchar en todas las interfaces (server.js usa 127.0.0.1 por defecto)
+ENV HOST=0.0.0.0
 EXPOSE 8080
 CMD ["node", "server.js"]

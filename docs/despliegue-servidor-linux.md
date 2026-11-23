@@ -1,5 +1,9 @@
 # Informes Legales ORAJ en el servidor del GORE (Debian 13)
 
+> **⚠️ Solo para un servidor dedicado SIN HestiaCP.** En panelh (Debian 13 + Hestia) **no** seguir esta guía:
+> `ufw`, Docker y el nginx/certbot propios chocan con el firewall y el nginx de Hestia y pueden tumbar los demás
+> sitios. Para panelh: **[despliegue-hestia.md](despliegue-hestia.md)**.
+
 Guía para instalar Informes Legales ORAJ (repositorio de informes legales de la ORAJ) en un servidor Linux propio del
 GORE Moquegua y mudar los datos desde la versión de prueba (Supabase + Google Cloud Run).
 

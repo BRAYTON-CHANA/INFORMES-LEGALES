@@ -22,6 +22,9 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
+// Solo local por defecto: en panelh lo publica el nginx de Hestia. En contenedores
+// (Cloud Run, docker-compose) el Dockerfile pone HOST=0.0.0.0
+const HOST = process.env.HOST || '127.0.0.1';
 app.disable('x-powered-by');
 // Detrás del balanceador de Cloud Run: req.ip / req.secure salen de x-forwarded-*
 app.set('trust proxy', parseInt(process.env.TRUST_PROXY || '1', 10));
@@ -91,9 +94,9 @@ app.use((err, req, res, next) => {
   res.status(status).json({ success: false, message: status === 500 ? 'Error interno del servidor' : 'Solicitud no válida' });
 });
 
-app.listen(PORT, () => {
-  console.log(`[server] API en http://localhost:${PORT} (BD: ${DB_CLIENT})`);
-  console.log(`[server] Health check: http://localhost:${PORT}/api/health`);
+app.listen(PORT, HOST, () => {
+  console.log(`[server] API en http://${HOST}:${PORT} (BD: ${DB_CLIENT})`);
+  console.log(`[server] Health check: http://${HOST}:${PORT}/api/health`);
 });
 
 // Cierre limpio del pool

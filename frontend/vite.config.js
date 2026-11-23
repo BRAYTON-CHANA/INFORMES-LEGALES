@@ -28,7 +28,7 @@ export default defineConfig({
     host: process.env.VITE_HOST === 'true',
     proxy: {
       // API Express local (server.js en la raíz del proyecto)
-      '/api': process.env.VITE_PROXY_API || 'http://localhost:3001',
+      '/api': process.env.VITE_PROXY_API || 'http://127.0.0.1:3001',
     }
   }
 })
